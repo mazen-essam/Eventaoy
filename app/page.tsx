@@ -2,8 +2,12 @@ import Image from "next/image";
 import ExploreBtn from "@/components/ui/ExploreBtn";
 import EventCard from "@/components/ui/EventCard";
 import { events } from "@/lib/constants";
-  
-export default function Home() {
+import { IEvent } from "@/database/event.model";
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+export default async function Home() {
+  const response = await fetch(`${BASE_URL}/api/events`);
+  const { events } = await response.json();
+  console.log(events);
   return (
    <section>
     <div className="container">
@@ -14,8 +18,8 @@ export default function Home() {
       <div>
         <h3>Featured Events</h3>
         <ul className="events">
-          {events.map((item) => (
-            <li key={item.slug}>
+          {events && events.length > 0 && events.map((item: IEvent) => (
+            <li key={item.slug} className="list-none">
               <EventCard {...item} />
             </li>
           ))}

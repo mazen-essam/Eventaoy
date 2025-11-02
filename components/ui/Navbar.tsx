@@ -9,13 +9,13 @@ const Navbar = () => {
           <p>Eventaoy</p>
         </Link>
         <ul>
-          <li>
+          <li className="list-none">
             <Link href="/">Home</Link>
           </li>
-          <li>
+          <li className="list-none">
             <Link href="/">Events</Link>
           </li>
-          <li>
+          <li className="list-none">
             <Link href="/">Create Event</Link>
           </li>
         </ul>

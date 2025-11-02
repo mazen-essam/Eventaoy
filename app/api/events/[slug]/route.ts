@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import connectDB from '@/lib/mongodb';
-import Event, { IEvent } from '@/database/event.model';
+import Event from '@/database/event.model';
+import { Types } from 'mongoose';
 
 // Define route params type for type safety
 type RouteParams = {
@@ -82,3 +83,70 @@ export async function GET(
     );
   }
 }
+
+/**
+ * DELETE /api/events/[id]
+ * Deletes a single event by its MongoDB ObjectId (id is passed in the same dynamic segment)
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: RouteParams
+): Promise<NextResponse> {
+  try {
+    // Connect to database
+    await connectDB();
+
+    // Await and extract id (comes in as `slug` param from the dynamic segment)
+    const { slug } = await params;
+
+    // Validate id presence
+    if (!slug || typeof slug !== 'string' || slug.trim() === '') {
+      return NextResponse.json(
+        { message: 'Missing event id' },
+        { status: 400 }
+      );
+    }
+
+    const id = slug.trim();
+
+    // Validate MongoDB ObjectId format
+    if (!Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { message: 'Invalid event id' },
+        { status: 400 }
+      );
+    }
+
+    // Delete event
+    const deleted = await Event.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { message: 'Event not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: 'Event deleted successfully' },
+      { status: 200 }
+    );
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error deleting event:', error);
+    }
+
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { message: 'Failed to delete event', error: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: 'An unexpected error occurred' },
+      { status: 500 }
+    );
+  }
+}
+
